@@ -34,7 +34,7 @@ jobs:
       - name: Verify Clean Package Staging Exclusions
         shell: pwsh
         run: |
-          $zipPath = "..\immersive_namelists_expanded_addon_larger_selector.zip"
+          $zipPath = "artifacts/immersive_namelists_expanded_addon_larger_selector.zip"
           if (-not (Test-Path $zipPath)) {
             $zipPath = "immersive_namelists_expanded_addon_larger_selector.zip"
           }

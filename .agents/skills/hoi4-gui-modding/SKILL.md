@@ -1,6 +1,10 @@
 ---
 name: hoi4-gui-modding
-description: Provides syntax rules, layout architectures, coordinate standards, and templates for modding Hearts of Iron IV (Clausewitz engine) graphical user interfaces (.gui, .gfx, and scripted_guis). Use when creating, editing, positioning, or troubleshooting custom windows, buttons, HUD extensions, or dynamic UI logic.
+description: >-
+  Provides syntax rules, layout architectures, coordinate standards, dropdown specifications,
+  and templates for modding Hearts of Iron IV (Clausewitz engine) graphical user interfaces
+  (.gui, .gfx, and scripted_guis). Use when creating, editing, positioning, or troubleshooting
+  custom windows, buttons, dropdown menus, HUD extensions, or dynamic UI logic.
 ---
 
 # Hearts of Iron IV GUI Modding Skill

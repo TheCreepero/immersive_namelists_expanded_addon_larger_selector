@@ -38,9 +38,8 @@ $ErrorActionPreference = 'Stop'
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 $RepoDir = $PSScriptRoot
-$ParentDir = Split-Path -Parent $RepoDir
 $DescriptorPath = Join-Path $RepoDir "descriptor.mod"
-$ModFolderName = Split-Path -Leaf $RepoDir
+$ModFolderName = "immersive_namelists_expanded_addon_larger_selector"
 $ModZipArchiveName = "immersive_namelists_expanded_addon_larger_selector.zip"
 
 if (-not $ModDir) {
@@ -251,7 +250,8 @@ if ($Clean) {
     Write-Step "Cleaning build artifacts and deployed mod..."
     $deployedFolder = Join-Path $ModDir $ModFolderName
     $deployedModFile = Join-Path $ModDir "$ModFolderName.mod"
-    $zipFile = Join-Path $ParentDir $ModZipArchiveName
+    $artifactsDir = Join-Path $RepoDir "artifacts"
+    $zipFile = Join-Path $artifactsDir $ModZipArchiveName
 
     if (Test-Path $deployedFolder) {
         Remove-Item -Recurse -Force $deployedFolder
@@ -264,6 +264,11 @@ if ($Clean) {
     if (Test-Path $zipFile) {
         Remove-Item -Force $zipFile
         Write-Ok "Removed archive: $zipFile"
+    }
+    $rootZip = Join-Path $RepoDir $ModZipArchiveName
+    if (Test-Path $rootZip) {
+        Remove-Item -Force $rootZip
+        Write-Ok "Removed archive: $rootZip"
     }
 
     Write-Host "`nClean complete." -ForegroundColor Green
@@ -287,7 +292,7 @@ if ($DevLink) {
     $targetModFile = Join-Path $ModDir "$ModFolderName.mod"
     [System.IO.File]::WriteAllText($targetModFile, $launcherModContent, [System.Text.UTF8Encoding]::new($false))
 
-    $localModFile = Join-Path $ParentDir "$ModFolderName.mod"
+    $localModFile = Join-Path $RepoDir "$ModFolderName.mod"
     [System.IO.File]::WriteAllText($localModFile, $launcherModContent, [System.Text.UTF8Encoding]::new($false))
 
     Write-Ok "DevLink configured successfully!"
@@ -299,7 +304,9 @@ if ($DevLink) {
 
 if ($Package) {
     Write-Step "Packaging mod release archive..."
-    $zipTarget = if ($ZipOutput) { $ZipOutput } else { Join-Path $ParentDir $ModZipArchiveName }
+    $artifactsDir = Join-Path $RepoDir "artifacts"
+    if (-not (Test-Path $artifactsDir)) { New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null }
+    $zipTarget = if ($ZipOutput) { $ZipOutput } else { Join-Path $artifactsDir $ModZipArchiveName }
 
     if (Test-Path $zipTarget) {
         Remove-Item -Force $zipTarget
@@ -309,19 +316,13 @@ if ($Package) {
     New-Item -ItemType Directory -Path $tempStage -Force | Out-Null
 
     try {
-        $excludeDirs = @('.git', '.github', '.vscode', 'tests', 'wiki')
-        $excludeFiles = @('.gitattributes', '.gitignore', 'build.ps1', 'build.bat', 'build_and_deploy.bat', '.steam_username')
+        $excludeDirs = @('.git', '.github', '.vscode', '.agents', '.agent', 'tests', 'wiki', 'assets', 'artifacts', 'scratch', 'Files')
+        $excludeFiles = @('*.bat', '*.ps1', '*.zip', '*.md', '.gitignore', '.gitattributes', '.steam_username')
 
-        $items = Get-ChildItem -Path $RepoDir
-        foreach ($item in $items) {
-            if ($item.PSIsContainer) {
-                if ($excludeDirs -contains $item.Name) { continue }
-                Copy-Item -Path $item.FullName -Destination (Join-Path $tempStage $item.Name) -Recurse -Force
-            } else {
-                if ($excludeFiles -contains $item.Name) { continue }
-                if ($item.Extension -eq '.zip') { continue }
-                Copy-Item -Path $item.FullName -Destination (Join-Path $tempStage $item.Name) -Force
-            }
+        & robocopy.exe $RepoDir $tempStage /MIR /XD $excludeDirs /XF $excludeFiles /R:1 /W:1 /NDL /NP /NFL | Out-Null
+        if ($LASTEXITCODE -ge 8) {
+            Write-Err "Robocopy failed with exit code $LASTEXITCODE."
+            exit $LASTEXITCODE
         }
 
         Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -351,15 +352,15 @@ if ($PublishSteam) {
         Write-Warn "No remote_file_id found in descriptor.mod. Steam Workshop will create a NEW item."
     }
 
-    $userFile = Join-Path $ParentDir ".steam_username"
-    if (-not $SteamUser -and (Test-Path $userFile)) {
-        $SteamUser = (Get-Content $userFile -Raw).Trim()
+    $steamUserFile = Join-Path $RepoDir ".steam_username"
+    if (-not $SteamUser -and (Test-Path $steamUserFile)) {
+        $SteamUser = (Get-Content $steamUserFile -Raw).Trim()
     }
 
     if (-not $SteamUser -and -not $DryRun) {
         $SteamUser = Read-Host "Enter your Steam account username"
         if ($SteamUser) {
-            Set-Content -Path $userFile -Value $SteamUser -Force
+            Set-Content -Path $steamUserFile -Value $SteamUser -Force
         }
     }
 
@@ -367,19 +368,13 @@ if ($PublishSteam) {
     New-Item -ItemType Directory -Path $stageDir -Force | Out-Null
 
     try {
-        $excludeDirs = @('.git', '.github', '.vscode', 'tests', 'wiki')
-        $excludeFiles = @('.gitattributes', '.gitignore', 'build.ps1', 'build.bat', 'build_and_deploy.bat', '.steam_username')
+        $excludeDirs = @('.git', '.github', '.vscode', '.agents', '.agent', 'tests', 'wiki', 'assets', 'artifacts', 'scratch', 'Files')
+        $excludeFiles = @('*.bat', '*.ps1', '*.zip', '*.md', '.gitignore', '.gitattributes', '.steam_username')
 
-        $items = Get-ChildItem -Path $RepoDir
-        foreach ($item in $items) {
-            if ($item.PSIsContainer) {
-                if ($excludeDirs -contains $item.Name) { continue }
-                Copy-Item -Path $item.FullName -Destination (Join-Path $stageDir $item.Name) -Recurse -Force
-            } else {
-                if ($excludeFiles -contains $item.Name) { continue }
-                if ($item.Extension -eq '.zip') { continue }
-                Copy-Item -Path $item.FullName -Destination (Join-Path $stageDir $item.Name) -Force
-            }
+        & robocopy.exe $RepoDir $stageDir /MIR /XD $excludeDirs /XF $excludeFiles /R:1 /W:1 /NDL /NP /NFL | Out-Null
+        if ($LASTEXITCODE -ge 8) {
+            Write-Err "Robocopy failed with exit code $LASTEXITCODE."
+            exit $LASTEXITCODE
         }
 
         $vdfPath = Join-Path $stageDir "workshop_build.vdf"
@@ -437,24 +432,21 @@ if (-not (Test-Path $targetFolder)) {
     New-Item -ItemType Directory -Path $targetFolder -Force | Out-Null
 }
 
-$excludeDirs = @('.git', '.github', '.vscode', 'tests', 'wiki')
-$excludeFiles = @('.gitattributes', '.gitignore', 'build.ps1', 'build.bat', 'build_and_deploy.bat', '.steam_username')
+$excludeDirs = @('.git', '.github', '.vscode', '.agents', '.agent', 'tests', 'wiki', 'assets', 'artifacts', 'scratch', 'Files')
+$excludeFiles = @('*.bat', '*.ps1', '*.zip', '*.md', '.gitignore', '.gitattributes', '.steam_username')
 
-$items = Get-ChildItem -Path $RepoDir
-foreach ($item in $items) {
-    if ($item.PSIsContainer) {
-        if ($excludeDirs -contains $item.Name) { continue }
-        Copy-Item -Path $item.FullName -Destination (Join-Path $targetFolder $item.Name) -Recurse -Force
-    } else {
-        if ($excludeFiles -contains $item.Name) { continue }
-        if ($item.Extension -eq '.zip') { continue }
-        Copy-Item -Path $item.FullName -Destination (Join-Path $targetFolder $item.Name) -Force
-    }
+& robocopy.exe $RepoDir $targetFolder /MIR /XD $excludeDirs /XF $excludeFiles /R:1 /W:1 /NDL /NP /NFL | Out-Null
+if ($LASTEXITCODE -ge 8) {
+    Write-Err "Robocopy failed with exit code $LASTEXITCODE."
+    exit $LASTEXITCODE
 }
 
 $launcherModContent = New-LauncherModContent -DescriptorPath $DescriptorPath -TargetModPath $targetFolder
 $targetModFile = Join-Path $ModDir "$ModFolderName.mod"
 [System.IO.File]::WriteAllText($targetModFile, $launcherModContent, [System.Text.UTF8Encoding]::new($false))
+
+$localModFile = Join-Path $RepoDir "$ModFolderName.mod"
+[System.IO.File]::WriteAllText($localModFile, $launcherModContent, [System.Text.UTF8Encoding]::new($false))
 
 Write-Ok "Mod successfully deployed to: $targetFolder"
 Write-Ok "Launcher descriptor generated at: $targetModFile"
