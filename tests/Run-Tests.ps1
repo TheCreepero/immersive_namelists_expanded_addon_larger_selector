@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('All', 'BuildScript', 'Descriptor')]
+    [ValidateSet('All', 'BuildScript', 'Descriptor', 'GuiLayout')]
     [string]$Suite = 'All',
 
     [switch]$CI,
@@ -15,7 +15,7 @@ $pesterModule = Get-Module -ListAvailable Pester | Where-Object { $_.Version.Maj
 if (-not $pesterModule) {
     if ($InstallPrereqs -or $env:CI) {
         Write-Host "Pester 5+ not detected. Installing Pester to CurrentUser scope..." -ForegroundColor Yellow
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
         Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force | Out-Null
         Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
         Install-Module -Name Pester -MinimumVersion 5.3.0 -Scope CurrentUser -Force -SkipPublisherCheck | Out-Null
@@ -36,6 +36,9 @@ if ($Suite -eq 'All' -or $Suite -eq 'BuildScript') {
 }
 if ($Suite -eq 'All' -or $Suite -eq 'Descriptor') {
     $testFiles.Add((Join-Path $testDir "Descriptor.Tests.ps1"))
+}
+if ($Suite -eq 'All' -or $Suite -eq 'GuiLayout') {
+    $testFiles.Add((Join-Path $testDir "GuiLayout.Tests.ps1"))
 }
 
 Write-Host "`n=======================================================" -ForegroundColor Cyan

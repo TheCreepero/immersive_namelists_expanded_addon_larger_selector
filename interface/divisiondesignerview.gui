@@ -861,12 +861,13 @@ guiTypes = {
 		dropDownBoxType = {
 			name = "division_names"
 			position = { x = 150 y = 114 }
-			size = { width = 220 height = 30 }
+			size = { width = 250 height = 30 }
+			expandedOnTop = yes
 
 
 			containerWindowType = {
 				name = "division_name_bg"
-				size = { width = 220 height = 30 }
+				size = { width = 250 height = 30 }
 
 
 				background = {
@@ -889,7 +890,7 @@ guiTypes = {
 				position = { x = 25 y = 5 }
 				font = "hoi_18mbs"
 				text = "COMBAT_HEADER"
-				maxWidth = 185
+				maxWidth = 215
 				maxHeight = 20
 				fixedsize = yes
 				format = left
@@ -911,9 +912,9 @@ guiTypes = {
 				show_animation_type = decelerated
 				hide_animation_type = accelerated
 				animation_time = 300
-				size = { width=230 height=260 }	
+				size = { width=340 height=440 }	
 				verticalScrollbar = "right_vertical_slider"
-				scroll_wheel_factor = 45
+				scroll_wheel_factor = 60
 				smooth_scrolling = yes
 				margin = { top = 7 bottom = 7 right = 6 }
 				#clipping = no
@@ -926,8 +927,8 @@ guiTypes = {
 				gridBoxType = {
 					name = "names_grid"
 					position = { x = 8 y = 0 }
-					size = { width = 179 height = 100%% }
-					slotsize = { width = 166 height = 30 }
+					size = { width = 304 height = 100%% }
+					slotsize = { width = 304 height = 30 }
 					max_slots_horizontal = 1
 					format = "UPPER_LEFT"
 				}
@@ -1981,7 +1982,7 @@ guiTypes = {
 	
 	containerWindowType = {
 		name = "designer_div_name_group_entry"
-		size = { width = 196 height = 30 }
+		size = { width = 304 height = 30 }
 		clipping = no
 		
 		background = {
@@ -1992,13 +1993,13 @@ guiTypes = {
 
 		instantTextboxType = {
 			name = "name"
-			position = { x = 5 y = 5 }
+			position = { x = 6 y = 5 }
 			textureFile = ""
 			font = "hoi_18mbs"
 			borderSize = {x = 0 y = 0}
 			text = "Maus"
-			maxWidth = 170
-			maxHeight = 30
+			maxWidth = 292
+			maxHeight = 20
 			fixedsize = yes
 			format = left
 			alwaystransparent = yes
