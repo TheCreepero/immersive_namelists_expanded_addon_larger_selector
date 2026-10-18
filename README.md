@@ -19,7 +19,7 @@ This repository adheres to the standard two-level Hearts of Iron IV mod architec
 - **Inner Mod Root** (`immersive_namelists_expanded_addon_larger_selector/`): The actual mod repository containing content files, descriptors, tests, and build engine.
 
 ```
-C:\dev\immersive-namelists-expanded-addon-larger-selector/
+immersive-namelists-expanded-addon-larger-selector/
 |-- build.ps1                       # Root build forwarding script
 |-- build.bat                       # Quick packaging shortcut
 |-- build_and_deploy.bat            # Quick deploy shortcut
@@ -43,7 +43,7 @@ All lifecycle tasks are managed through `build.ps1`:
 # 1. Deploy mod to local Paradox Interactive Hearts of Iron IV mod folder
 .\build.ps1 -Deploy
 
-# 2. Configure zero-copy DevLink (instant hot-reload for live testing)
+# 2. Configure zero-copy DevLink (the launcher loads this folder itself; restart the game to see a change)
 .\build.ps1 -DevLink
 
 # 3. Validate syntax, bracket balance, and UTF-8 BOM without deploying

@@ -1,31 +1,25 @@
-# Immersive Namelists Expanded - Addon: Larger Selector — Development Rules
+# Immersive Namelists Expanded - Addon: Larger Selector - Agent Rules
 
-## 1. Mod Architecture & Purpose
-- **Mod Role**: Lightweight quality-of-life UI addon expanding the division namelist selection dropdown in Hearts of Iron IV's Division Designer (`countrydivisiondesignerview`).
-- **Checksum Invariant**: This mod alters only UI definitions in `interface/` and maintains 100% Ironman, achievement, and multiplayer compatibility.
-- **Single-Root Workspace Layout**:
-  - The repository root (`C:\dev\immersive-namelists-expanded-addon-larger-selector`) is the unified Git workspace root containing `.git/`, `descriptor.mod`, `thumbnail.png`, `interface/`, `build.ps1`, `tests/`, `wiki/`, and dev assets (`assets/`).
-  - There is no nested inner repository or forwarder scripts. All tooling, automation, and Git operations operate directly at this single root.
+Shared rules for every mod in this tree (file encodings, build commands, engine knowledge, git) are in the Modding Manager's `../../GEMINI.md`; Claude Code loads it by itself, Antigravity reads it first.
 
-## 2. Clausewitz GUI Invariants & Standards
-- **UTF-8 Without BOM**: All Clausewitz interface and script files (`.gui`, `.gfx`, `.mod`) must strictly be saved in UTF-8 without BOM (`[System.Text.UTF8Encoding]::new($false)`). Never use standard Windows PowerShell `Set-Content -Encoding UTF8` because it writes a BOM (`\ufeff`), which breaks Clausewitz parser loading.
-- **Hardcoded Widget Names**: C++ binds GUI elements exclusively by `name = "..."`. Never rename existing vanilla element names (`division_names`, `expanded_window`, `names_grid`, `designer_div_name_group_entry`, `name`).
-- **Strict Bracket & Quote Balancing**: All curly brackets `{}` and string quotes `""` must remain strictly balanced.
-- **Tiled Windows & Scaling**: Expandable windows must use proper tiled window textures with defined border margins so background borders scale cleanly without distortion.
+## What this mod is
+- A quality-of-life UI addon that enlarges the division namelist dropdown of the Division Designer (`countrydivisiondesignerview`). It changes only `interface/`, outside the checksum, so Ironman, achievements and multiplayer stay compatible [LOAD-008].
+- It ships `interface/divisiondesignerview.gui` under the game's own file name, so it replaces the whole vanilla file for every mod loaded with it [LOAD-010]; a single window in a later-sorting file would replace only that window [LOAD-001].
 
-## 3. Build & Test Protocol
-- Always run pre-flight syntax, bracket balance, and descriptor checks before declaring work complete:
-  ```powershell
-  powershell -File .\build.ps1 -ValidateOnly
-  ```
-- Run the full automated Pester test suite:
-  ```powershell
-  powershell -File .\build.ps1 -Test
-  ```
-- Use `.\build.ps1 -DevLink` for zero-copy live editing directly from the repository into the Paradox Launcher.
-- Use `.\build.ps1 -Deploy` to create a mirrored local deployment copy in Paradox's `mod/` directory.
-- Use `.\build.ps1 -Package` to verify clean staging and distribution packaging (strictly excluding `.git`, `.github`, `.vscode`, `.agents`, `tests`, `wiki`, `assets`, `artifacts`, `scratch`, and developer scripts).
+## Mod invariants
+- The code fills a widget by its `name`, looked up inside its vanilla parent [GUW-001] [GUW-014]: never rename or reparent `division_names`, `expanded_window`, `names_grid`, `designer_div_name_group_entry` or `name`.
+- Expandable windows use tiled sprites with border margins, which take the size of their window and keep the border [SPR-001].
+- GUI syntax and procedure come from the user-level `hoi4-gui-modding` skill; this repository keeps no copy of it.
 
-## 4. Git & Commit Guidelines
-- Do not commit to the Git repository unless explicitly instructed by the user. The user prefers to review changes before committing.
-- After completing changes, always verify `git status` at the workspace root to ensure the working tree reflects expected changes.
+## Commands beyond build.ps1
+- None.
+
+## Read when
+| Task | Read |
+|---|---|
+| Any change to the window | the `hoi4-gui-modding` skill, then `tests/GuiLayout.Tests.ps1` for what the tests pin |
+
+## Engine Knowledge
+- Engine facts live in the Modding Manager's register, reached through the user-level `hoi4-modding-knowledge` skill: search it before a new kind of file and before asking for a game launch, cite ids here, never write a fact into this repository.
+- Topics this mod leans on: `gui-widgets`, `gui-layout`, `gui-sprites-and-fonts`, `loading-and-overrides`.
+- `tests/Knowledge.Tests.ps1` runs the register's audit for this repository; it is a copy the Manager keeps current.
